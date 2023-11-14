@@ -19,7 +19,7 @@ async def ask_ollama(question,model="llama2-uncensored"):
     print(f"using {model} to answer")
     url = 'http://localhost:11434/api/generate'
     data = {"model": model, "prompt": question}
-    timeout = aiohttp.ClientTimeout(total=120)
+    timeout = aiohttp.ClientTimeout(total=300)
 
     async with aiohttp.ClientSession(timeout=timeout) as session:
         try:
@@ -56,11 +56,12 @@ async def on_message(message):
         ollama_response = await ask_ollama(message.content[len(".uncensored"):])
         await message.channel.send(ollama_response)
 
-    if message.content.startswith(".chat"):
+    if message.content.startswith(".chat"):     
         ollama_response = await ask_ollama(message.content[len(".chat"):],model="mistral")
         await message.channel.send(ollama_response)
 
     if message.content.startswith(".code"):
+        await message.channel.send("I am working on it, give me some time to run it through.")
         ollama_response = await ask_ollama(message.content[len(".code"):],model="codellama")
         await message.channel.send(ollama_response)
 
