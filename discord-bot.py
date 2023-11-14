@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 import json
 
 load_dotenv()
-START = ".chat"
 TOKEN = os.getenv("TOKEN")
 
 
@@ -16,15 +15,9 @@ client = discord.Client(intents=intents)
 
 async def ask_ollama(question,model="llama2-uncensored"):
 
-    if "code" in question:
-        print("Using codellama to answer")
-        url = 'http://localhost:11434/api/generate'
-        data = {"model": "codellama", "prompt": question}
-
-    else:
-        print(f"using {model} to answer")
-        url = 'http://localhost:11434/api/generate'
-        data = {"model": model, "prompt": question}
+    print(f"using {model} to answer")
+    url = 'http://localhost:11434/api/generate'
+    data = {"model": model, "prompt": question}
 
     try:
         response = requests.post(url, json=data)
@@ -56,12 +49,16 @@ async def on_message(message):
     if message.author == client.user:
         return
     
-    if message.content.startswith(START):
-        ollama_response = await ask_ollama(message.content[len(START):])
+    if message.content.startswith(".uncensored"):
+        ollama_response = await ask_ollama(message.content[len(".uncensored"):])
         await message.channel.send(ollama_response)
 
-    if message.content.startswith(START + "-mistral"):
-        ollama_response = await ask_ollama(message.content[len(START + "-mistral"):],model="mistral")
+    if message.content.startswith(".chat"):
+        ollama_response = await ask_ollama(message.content[len(".chat"):],model="mistral")
+        await message.channel.send(ollama_response)
+
+    if message.content.startswith(".code"):
+        ollama_response = await ask_ollama(message.content[len(".code"):],model="codellama")
         await message.channel.send(ollama_response)
 
 client.run(TOKEN)
