@@ -7,8 +7,10 @@ try:
     from dotenv import load_dotenv
 
 except:
-    os.popen("pip install discord.py requests python-dotenv")
-    os.popen("apt install python3-discord.py python3-requests python3-dotenv")
+    try:
+        os.popen("pip install discord.py requests python-dotenv")
+    except:
+        os.popen("apt install python3-discord.py python3-requests python3-dotenv")
 
     import discord
     import requests
