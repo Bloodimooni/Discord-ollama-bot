@@ -4,7 +4,7 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-START = "!ai"
+START = ".chat"
 TOKEN = os.getenv("TOKEN")
 
 
