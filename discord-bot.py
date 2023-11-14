@@ -49,7 +49,7 @@ async def on_message(message):
         return
     
     if message.content.startswith(START):
-        ollama_response = ask_ollama(message.content[len(START):])
+        ollama_response = await ask_ollama(message.content[len(START):])
         await message.channel.send(ollama_response)
 
     
