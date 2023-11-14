@@ -1,21 +1,8 @@
 import os
-import sys
-
-try:
-    import discord
-    import requests
-    from dotenv import load_dotenv
-
-except:
-    try:
-        os.popen("pip install discord.py requests python-dotenv")
-    except:
-        os.popen("apt install python3-discord.py python3-requests python3-dotenv")
-
-    import discord
-    import requests
-    from dotenv import load_dotenv
-
+import discord
+import requests
+from dotenv import load_dotenv
+import json
 
 load_dotenv()
 START = ".chat"
@@ -27,26 +14,29 @@ intents.message_content = True
 
 client = discord.Client(intents=intents)
 
-def send_to_ollama(message):
-    
-    url = "http://localhost:11434/api/generate"
+async def ask_ollama(question):
+    url = 'http://localhost:11434/api/generate'
+    data = {"model": "llama2-uncensored", "prompt": question}
 
-    data = {
-        "model":"llama2-uncensored",
-        "prompt": message
-    }
-
-    try: 
+    try:
         response = requests.post(url, json=data)
         response.raise_for_status()
 
-        answer = response.json().get("answer", "Sorry, I could not process that.")
+        # Split the response into individual JSON strings
+        json_strings = response.text.strip().split('\n')
 
-        return answer
+        # Parse each JSON string and concatenate the 'response' fields
+        full_response = ''
+        for json_str in json_strings:
+            parsed_json = json.loads(json_str)
+            full_response += parsed_json.get('response', '')
+
+        return full_response
 
     except requests.exceptions.RequestException as e:
-
-        return f"An error occured: {e}"
+        return f"An error occurred: {e}"
+    except json.JSONDecodeError as e:
+        return f"JSON parsing error: {e}"
 
 
 @client.event
@@ -59,7 +49,7 @@ async def on_message(message):
         return
     
     if message.content.startswith(START):
-        ollama_response = send_to_ollama(message.content[len(START):])
+        ollama_response = ask_ollama(message.content[len(START):])
         await message.channel.send(ollama_response)
 
     
