@@ -27,11 +27,11 @@ async def ask_ollama(question,model="llama2-uncensored"):
                 response.raise_for_status()
 
                 # Split the response into individual JSON strings
-                json_strings = response.text.strip().split('\n')
+                json_strings = await response.text()
 
                 # Parse each JSON string and concatenate the 'response' fields
                 full_response = ''
-                for json_str in json_strings:
+                for json_str in json_strings.strip().split('\n'):
                     parsed_json = json.loads(json_str)
                     full_response += parsed_json.get('response', '')
 
