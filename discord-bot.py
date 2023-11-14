@@ -7,7 +7,11 @@ load_dotenv()
 START = "!ai"
 TOKEN = os.getenv("TOKEN")
 
-client = discord.Client()
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = discord.Client(intents=intents)
 
 def send_to_ollama(message):
     
