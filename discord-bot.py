@@ -8,6 +8,8 @@ load_dotenv()
 START = ".chat"
 TOKEN = os.getenv("TOKEN")
 
+LIST_OF_MODELS = ["llama2-uncensored","codellama","mistral"]
+MODEL = LIST_OF_MODELS[0]
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -15,8 +17,15 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 async def ask_ollama(question):
-    url = 'http://localhost:11434/api/generate'
-    data = {"model": "llama2-uncensored", "prompt": question}
+
+    if "code" in question:
+        print("[!]\tUSED MODEL OVERRIDE, USING CODELLAMA FOR THIS PROMPT.")
+        url = 'http://localhost:11434/api/generate'
+        data = {"model": "codellama", "prompt": question}
+
+    else:
+        url = 'http://localhost:11434/api/generate'
+        data = {"model": MODEL, "prompt": question}
 
     try:
         response = requests.post(url, json=data)
@@ -52,5 +61,28 @@ async def on_message(message):
         ollama_response = await ask_ollama(message.content[len(START):])
         await message.channel.send(ollama_response)
 
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+    
+    if message.content.startswith(START + " list"):
+        await message.channel.send("You can choose between different models:\
+                                   \n\t- llama2-uncensored (default)\
+                                   \n\t- coding model (Just type 'code' in the prompt)\
+                                   \n\t- Mistral (A chatgpt like Model)")
+        await message.channel.send("Just type [.chat select model] to use for your next prompt.")
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+    
+    if message.content.startswith(START + " select "):
+        model = message.content[len(START + " select "):]
+        if model.lower() in LIST_OF_MODELS:
+            MODEL = model
+        else:
+            await message.channel.send(f"I am sorry, but I don't have the model: {model}\nI can only use the following: {LIST_OF_MODELS}.")
     
 client.run(TOKEN)
